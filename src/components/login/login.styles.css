@@ -1,0 +1,33 @@
+/* @import "fonts/fonts.scss"; */
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500&display=swap');
+
+body { margin: 0px; padding: 0;  background: #fff; width: 320px; height: 100%;
+  overflow: hidden; font-family: 'Rubik', sans-serif;  font-weight: 400;}
+  .justify-center{justify-content: center;}
+/* width */
+.customScrollY::-webkit-scrollbar { width: 4px; border-radius:12px }
+
+/* Track */
+.customScrollY::-webkit-scrollbar-track { background:#fff;} 
+ 
+/* Handle */
+.customScrollY::-webkit-scrollbar-thumb { background: #D0D2DA; border-radius:12px;}
+
+/* Handle on hover */
+.customScrollY::-webkit-scrollbar-thumb:hover { background: #D0D2DA; border-radius:12px; }
+.login{margin: 45px 0; padding: 20px 20px; height: 490px; box-sizing: border-box; overflow-x: hidden; overflow-y: hidden;}
+.login .title{letter-spacing: -0.01em; color: #000; font-size: 20px; line-height: 28px; margin: 10px 0 30px;  font-weight: 500; text-align: left;}
+.login .loginBox{display: flex; flex-direction: column; justify-content: space-between; min-height: 354px; box-sizing: border-box; width:280px; }
+.login .loginBox .inputBlock>div{margin-bottom: 30px;}
+.login .loginBox .inputBlock label{margin-bottom: 8px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; font-weight: 500;  font-size: 12px;}
+.login .loginBox .inputBlock label span{color: #651FFF;}
+
+.login .loginBox .inputBlock input{background: #FFFFFF; border: 1px solid #C0C3CE; box-sizing: border-box; border-radius: 3px; color: #000; height: 40px; padding: 0 16px; color: #000; font-size: 14px; width: 100%;  }
+.login .loginBox .inputBlock input.password{font-size: 28px;  }
+.login .loginBox .inputBlock input:focus{outline-color:#651FFF;} 
+
+.actionBox{margin: 10px 0; text-align: center;}
+.extra-msg.showRegistration, .extra-msg.showLogin{font-weight: 500; cursor: pointer;}
+
+.extra-msg, .txt{font-size: 12px; padding: 0; margin:10px 0 0 0; color: #9B9FB1;   }
+.extra-msg span, .txt span{color:#651FFF; cursor: pointer;  }

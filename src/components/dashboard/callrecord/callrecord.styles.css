@@ -1,0 +1,16 @@
+.callHistoryListing{padding: 0; margin: 0; list-style: none;}
+.callHistoryListing li{padding: 12px 20px; border-bottom:1px solid #ECEDF0; display: flex; align-items: flex-start; flex-direction: column; }
+.callHistoryListing li .callListBox{display: flex; align-items: center;
+  justify-content: space-between; width: 100%;}
+.callHistoryListing li .callDetailsBox{display: block; margin: 0 0 0 15px; }
+.callHistoryListing li .callDetailsBox button{border: none; background: none; outline: none; cursor: pointer; margin: 10px 0 0 0;}
+
+.callHistoryListing .leftBx{display: flex; align-items: flex-start;}
+.callHistoryListing .leftBx .callArrow{width: 14px; height: 14px; margin-right: 10px;}
+.callHistoryListing .leftBx .callArrow.incoming{background: url(../../../images/incoming.svg) 0 0 no-repeat;}
+.callHistoryListing .leftBx .callArrow.outgoing{background: url(../../../images/outgoing.svg) 0 0 no-repeat;}
+.callHistoryListing .leftBx .callArrow.missed{background: url(../../../images/missed.svg) 0 0 no-repeat;}
+
+.callHistoryListing .leftBx .numberBx{font-size: 14px; letter-spacing: -0.01em; line-height: 14px;color: #000;}
+.callHistoryListing .leftBx .numberBx>span{font-size: 12px; display: block;   margin-top: 4px; line-height: 14px;color: #9B9FB1;}
+.callHistoryListing .rightBx{font-size: 12px; letter-spacing: -0.01em; line-height: 14px;color: #9B9FB1;}

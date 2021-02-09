@@ -1,0 +1,11 @@
+/*******/
+.historymainBox{padding: 0; margin: 45px 0 59px 0;}
+.historymainBox .historyBox .titile, .historymainBox .settingBox .title{font-size: 20px; letter-spacing: -0.01em; color: #000; line-height: 28px; margin: 0; padding: 20px; border-bottom: 1px solid #ECEDF0;font-weight: 500; }
+
+
+.historymainBox .settingListing{padding: 14px 20px; border-bottom:1px solid #ECEDF0;}
+.historymainBox .settingListing p{font-size: 12px; line-height: 14px; letter-spacing: -0.01em;  color: #9B9FB1; margin: 0 0 14px 0;}
+.historymainBox .settingListing .infosection{display: flex; align-items: center; justify-content: space-between;}
+.historymainBox .settingListing .infosection .setting-txt{font-size: 14px; line-height: 20px; color: #000; letter-spacing: -0.01em;}
+.historymainBox .settingListing .infosection .arrow{position: relative; cursor: pointer; background: url(/src/images/Icon-right.svg) 0 0 no-repeat; height: 24px; width: 24px;}
+.historymainBox .settingListing .infosection .arrow.disabled{pointer-events: none; cursor: default;}

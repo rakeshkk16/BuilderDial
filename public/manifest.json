@@ -1,12 +1,24 @@
 {
   "short_name": "My Extension",
-  "name": "My Extension",
+  "name": "Phone Calling",
   "version": "1.1",
   "manifest_version": 2,
+  "description": "Allows you to place calls within your browser",
+  "permissions": [
+    "activeTab",
+    "background",
+    "http://*/",
+    "https://*/",
+    "storage"
+  ],
   "background": {
-    "scripts": ["app/background.js"]
+    "page": "./app/background.html",
+    "persistent": true
   },
-  "browser_action": {},
+  "browser_action": {
+    "default_title": "Builder Dial",
+    "default_popup": "index.html"
+  },
   "content_scripts" : [
     {
       "matches": [ "<all_urls>" ],
@@ -17,5 +29,5 @@
   "web_accessible_resources":[
     "/static/css/content.css", "/static/media/*"
   ],
-  "content_security_policy": "script-src 'self' 'sha256-GgRxrVOKNdB4LrRsVPDSbzvfdV4UqglmviH9GoBJ5jk='; object-src 'self'"
+  "content_security_policy": "script-src 'self' https://ipinfo.io; object-src 'self'"
 }

@@ -1,0 +1,36 @@
+
+/*** footer ****/
+.footer, .dialpad-footer{background: #F8F9FA; border-top: 1px solid #ECEDF0; height: 45px; padding:0 20px; position: fixed; bottom: 0; width: 100%; box-sizing: border-box; left: 0; display: flex; align-items: center;}
+
+.footer p{padding: 0; margin: 0;}
+
+/** dialpad footer **/
+.dialpad-footer{height: 59px !important; }
+.dialpad-footer .ftrListing{display: flex; align-items: center; justify-content: space-between; width: 100%;}
+.dialpad-footer .ftrListing button{
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: column;
+  height: 43px;
+  color: #9B9FB1;
+  font-size: 12px;
+  cursor: pointer;
+  letter-spacing: -0.01em;
+}
+
+.dialpad-footer .ftrListing button:focus{border: none; outline: none;}
+.dialpad-footer .ftrListing button>span{display: block; filter: grayscale(1);}
+.dialpad-footer .ftrListing button.active{color: #651FFF;}
+.dialpad-footer .ftrListing button.active>span{filter: none;}
+.dialpad-footer .ftrListing button>span.history{
+  background: url(../../images/sprite.png) -88px -2px no-repeat;
+    height: 22px;
+    width: 22px;
+}
+.dialpad-footer .ftrListing button>span.dialkeypad{background: url(../../images/sprite.png) -33px -17px no-repeat;height: 24px;
+  width: 24px;}
+.dialpad-footer .ftrListing button>span.setting{background: url(../../images/sprite.png) -112px -21px no-repeat; height: 22px;
+  width: 22px;}

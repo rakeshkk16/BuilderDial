@@ -127,8 +127,7 @@ module.exports = {
           {
             options: {
               formatter: eslintFormatter,
-              eslintPath: require.resolve('eslint'),
-              
+              eslintPath: require.resolve('eslint'),              
             },
             loader: require.resolve('eslint-loader'),
           },
@@ -156,7 +155,7 @@ module.exports = {
             include: paths.appSrc,
             loader: require.resolve('babel-loader'),
             options: {
-              
+              plugins: ["@babel/plugin-proposal-class-properties"],
               compact: true,
             },
           },

@@ -1,0 +1,141 @@
+/** dialpad footer **/
+/* .dialpad-footer{height: 59px !important; }
+.dialpad-footer .ftrListing{display: flex; align-items: center; justify-content: space-between; width: 100%;}
+.dialpad-footer .ftrListing button{
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: column;
+  height: 43px;
+  color: #9B9FB1;
+  font-size: 12px;
+  cursor: pointer;
+  letter-spacing: -0.01em;
+}
+
+.dialpad-footer .ftrListing button:focus{border: none; outline: none;}
+.dialpad-footer .ftrListing button>span{display: block; filter: grayscale(1);}
+.dialpad-footer .ftrListing button.active{color: #651FFF;}
+.dialpad-footer .ftrListing button.active>span{filter: none;}
+.dialpad-footer .ftrListing button>span.history{
+  background: url(../../../images/sprite.png) -88px -2px no-repeat;
+    height: 22px;
+    width: 22px;
+}
+.dialpad-footer .ftrListing button>span.dialkeypad{background: url(../../../images/sprite.png) -33px -17px no-repeat;height: 24px;
+  width: 24px;}
+.dialpad-footer .ftrListing button>span.setting{background: url(../../../images/sprite.png) -112px -21px no-repeat; height: 22px;
+  width: 22px;} */
+.keys{
+  width: 100%;
+    margin: 0 auto;
+    background: #fff;
+    padding: 0 10px;
+    box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between;
+}
+.numberBox{
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  height: 70px;
+  flex-direction: column;
+}
+.numberBox input{
+      text-align: center;
+      display: block;
+      border: none;
+      width: 100%;
+      color: #000;
+      letter-spacing: -0.01em;
+      font-size: 20px;
+      line-height: 36px;
+       
+}
+.numberBox input.inputNumber{
+  float: right;
+  border: 1px solid #DCDCDC;
+}
+.numberBox .callArea{
+  height: 70%;
+}
+.numberBox span.inputNumber{
+  font-size: xx-large;
+}
+.numberBox input:focus{outline: none;}
+
+.keys .key-row{display: flex; align-items: center; margin-bottom: 10px;}
+.keys .key-row button{
+  background: #F8F9FA;
+    height: 70px;
+    width: 70px;
+    border: none !important;
+    margin-right: 24px;
+    color: #000;
+    font-size: 30px;
+    transition: all .1s ease-in-out;
+    cursor: pointer;
+     
+    border-radius: 20px;
+    letter-spacing: -0.01em;
+    text-align: center;
+}
+.keys .key-row button>span{
+  font-size: 11px;
+  display: block;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  height: 12px; 
+}
+.keys .key-row button:hover, .keys .key-row button.active, .keys .key-row button:focus{background:#ECEDF0 !important; outline: none;transform: scale(1.01);}
+.keys .key-row button:last-child{margin-right: 0;}
+
+.keys .key-row.dialAction, .keys .key-row.dialAction2{display: flex; align-items: center; margin-bottom: 0;}
+.keys .key-row.dialAction2{justify-content: flex-end;}
+.keys .key-row.dialAction button{background: #fff;}
+.keys .key-row.dialAction button:hover, .keys .key-row.dialAction button:focus{background: #fff !important}
+.keys .key-row.dialAction button>span{display: inline-block;}
+.keys .key-row.dialAction button>span.reset{background: url(../../../images/sprite.png) -112px -1px no-repeat; height: 18px; width: 18px;}
+.keys .key-row.dialAction button>span.dial{background: url(../../../images/sprite.png) -1px -45px no-repeat; height: 70px; width: 70px;}
+.keys .key-row.dialAction button>span.disconnect{background: url(../../../images/sprite.png) -73px -45px no-repeat; height: 70px; width: 70px;}
+.keys .key-row.dialAction button>span.deleteNumber{background: url(../../../images/sprite.png) -86px -25px no-repeat; height: 18px; width: 24px;}
+.keys .key-row.dialAction button.hidetxt{color: #651FFF; letter-spacing: -0.01em; font-size: 12px;  }
+
+.keys .numberBtnBox{
+  min-height: 302px; 
+  display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.keys .numberBtnBox .onlynumber{
+  color: #000;
+  font-size: 30px;
+}
+
+.keys .key-row.actionBtn button>span{display: inline-block;}
+.keys .key-row.actionBtn button>span img{width: 100%;}
+.keys .key-row.actionBtn button.dial{background: #4cd964 !important;}
+.keys .key-row.actionBtn button.phoneClose{background: #cc0003 !important;}
+.keys .key-row.actionBtn button.phoneClose span{transform: rotate(129deg);}
+.keys .key-row.actionBtn button.phoneClose span img{position: relative; top: -4px; left: 1px;}
+.keys .key-row.actionBtn button.play-pausebx .block-bx{height: 42px; width: 42px; overflow: hidden; }
+
+.dialPadMainBox{height: 490px; margin: 45px 0 59px 0;}
+
+.muteScreen{height: 143px;}
+.muteScreen button{display: flex; align-items: center; justify-content: center;}
+.muteScreen .key-row button:hover, .muteScreen .key-row button.active{background: #000 !important;}
+.muteScreen .key-row button:hover span, .muteScreen .key-row button.active span{filter: invert(1);}
+.muteScreen span{display: block; height: 30px !important; width:30px;}
+.muteScreen .mute{ background: url(../../../images/sprite.png) -56px -13px no-repeat;}
+.muteScreen .keybardIcon{background: url(../../../images/sprite.png) -1px -13px no-repeat;}
+.incomig-bx{justify-content: center; margin-top: -30px;}
+.incomig-bx button>span{display: block; margin-bottom: 12px;}
+.incomig-bx button{font-size: 14px !important; padding: 0;}
+
+/*******/
