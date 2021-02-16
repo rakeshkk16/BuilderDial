@@ -1,4 +1,5 @@
-(function() {
+
+// (function() {
   var alertSound = new Audio("../sounds/telephone.mp3");
   var deviceView;
   var workerToken;
@@ -20,9 +21,13 @@
   var fullNumber;
   var isoCode;
   var countryCode;
-  var isOnOutgoingCall;
+  var isOnOutgoingCall = false;
   var isOnReservation = false;
-
+  var currentReservation;
+  var isIncomingCall = false;
+  var totalSeconds = 0;
+  var calledTimer;
+  var iconChanger;
 
   const icons = {
     small: {
@@ -81,41 +86,106 @@
   });
 
   chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {   
-     if (request.userAuthentication) {
-      console.log('user authenticated in background');
-      console.log(request.userAuthentication);
-      if(request.userAuthentication.isUserAuthenticated) {
-        isUserAuthenticated = request.userAuthentication.isUserAuthenticated;
-        workerToken = request.userAuthentication.workerToken;
-        available_Activity_SID = request.userAuthentication.available_activity_sid;
-        offline_Activity_SID = request.userAuthentication.offline_activity_sid;
-        userToken = request.userAuthentication.token;
-        userID = request.userAuthentication.userID;
-        chrome.storage.local.set({ userData: request.userAuthentication }, function () {
-          console.log("User is set to" + true);
-        })
-        pageInit();
-      } else {
-        isUserAuthenticated = request.userAuthentication.isUserAuthenticated;
-        chrome.storage.local.set({ userData: request.userAuthentication }, function () {
-          console.log("User is set to" + false);
-        })
-        console.log('not authenticated');
-      }
-    } else if (request.outgoingObj) {
-        fullNumber = request.outgoingObj.number;
-        isoCode = request.outgoingObj.isoCode;
-        countryCode = request.outgoingObj.countryCode;
-        isOnOutgoingCall = true;
-        onOutgoingCallClick();
-    } else if (request.testing) {
-      console.log(isUserAuthenticated);
-    }
-  });
+    if (request && request.output) {
+      switch(request.output) {
+        case 'Accepted':
+          alertSound.pause();
+          onCall = true;
+          isIncomingCall = false;
+          console.log(currentReservation.reservationStatus + '  ' + currentReservation.task.assignmentStatus);
+          currentReservation.dequeue(
+            currentReservation.task.attributes.caller,
+            null,
+            "record-from-answer",
+            null,
+            // eslint-disable-next-line no-undef
+            environment.reservationDequeue,
+             function(error, reservation) {
+                if(error) {
+                    console.log('Code :' + error.code + ' Message :' + error.message);
+                    return;
+                }
+                console.log("reservation dequeued");
+              }
+            );
 
-  function backgroundFunction () {
-    return "hello from the background!"
-  }
+          // calledTimer = setInterval(setTime, 1000);
+          // clearInterval(iconChanger);
+          setTimeout(function(){ 
+            chrome.browserAction.setIcon({path: icons.disabled});
+          }, 1000);
+          break;
+        case 'Rejected':
+          console.log(currentReservation);
+          if (currentReservation) {
+            currentReservation.reject(
+              function(error, reservation) {
+                  if(error) {
+                    console.log('Code :' + error.code + ' ' + 'Message :' + error.message);
+                      return;
+                  }
+                  console.log("reservation rejected");
+                  for (var property in reservation) {
+                      console.log(property+" : "+reservation[property]);
+                  }
+              }
+            );
+          }
+          
+          alertSound.pause();
+          // clearInterval(iconChanger);
+          setTimeout(function(){ 
+            chrome.browserAction.setIcon({path: icons.disabled});
+          }, 1000);
+          chrome.runtime.sendMessage({output: 'callRejected'});
+          console.log('popupjs rejected for Ongoing call as ' + onCall);
+          if (onCall) {
+            twilioConnection.disconnectAll();
+          }
+          onCall = false;
+          break;
+        case 'IncomingPopup':
+          isIncomingCall = false;
+          break;
+        case 'OnHangUp':
+          console.log('call Hangup');
+          isOnOutgoingCall = false;
+          deviceView.device.disconnectAll();
+
+          outgoingConnection = null;
+          onCall = false;
+          // clearInterval(calledTimer);
+          // console.log('call timer ' + calledTimer);
+          // resetTimer();
+          break;
+        default:
+          break;
+      }
+    } else {
+      if (request.userAuthentication) {
+        console.log('user authenticated in background');
+        console.log(request.userAuthentication);
+        if(request.userAuthentication.isUserAuthenticated) {
+          isUserAuthenticated = request.userAuthentication.isUserAuthenticated;
+          workerToken = request.userAuthentication.workerToken;
+          available_Activity_SID = request.userAuthentication.available_activity_sid;
+          offline_Activity_SID = request.userAuthentication.offline_activity_sid;
+          userToken = request.userAuthentication.token;
+          userID = request.userAuthentication.userID;
+          pageInit();
+        } else {
+          isUserAuthenticated = request.userAuthentication.isUserAuthenticated;
+          console.log('not authenticated');
+        }
+      } else if (request.outgoingObj) {
+          fullNumber = request.outgoingObj.number;
+          isoCode = request.outgoingObj.isoCode;
+          countryCode = request.outgoingObj.countryCode;
+          isOnOutgoingCall = true;
+          onOutgoingCallClick();
+      }
+    }   
+  });
 
   function pageInit(isTokenAvailable) {
     deviceView = new DeviceView();
@@ -206,10 +276,41 @@
     }
   }
 
+  function setTime() {
+    ++totalSeconds;
+  }
+
+  function changeIcon() {
+    setTimeout(function(){ 
+      chrome.browserAction.setIcon({path: icons.small});
+    }, 200);
+    setTimeout(function(){ 
+      chrome.browserAction.setIcon({path: icons.enabled});
+    }, 400);
+  }
+
+  function resetTimer() {
+    totalSeconds = 0;
+  }
+
+  function resetValues() {
+    clearInterval(calledTimer);
+    clearInterval(iconChanger);
+    resetTimer();
+    setTimeout(function(){ 
+      chrome.browserAction.setIcon({path: icons.disabled});
+    }, 1500);
+    onCall = false;
+    isIncomingCall = false;
+    isOnOutgoingCall = false;
+    outgoingConnection = null;
+    chrome.runtime.sendMessage({output: 'callRejected'});
+  }
+
   class DeviceView {
     constructor() {
-    //  this.tokenUrlEl = environment.twilioToken;
-    this.tokenUrlEl = 'https://staging-pb.engineer.ai/api/public/twilio/generate_token';
+     this.tokenUrlEl = environment.twilioToken;
+    // this.tokenUrlEl = 'https://staging-pb.engineer.ai/api/public/twilio/generate_token';
     }
 
     setupDevice(onReady) {
@@ -346,7 +447,23 @@
           //    iconChanger = setInterval(changeIcon, 500);
           //    isIncomingCall = true;
           //  }
-           console.log("reservation.accepted " + reservation);
+            isOnReservation = true;
+            chrome.runtime.sendMessage({isRervationActive: {isReservationAvailable: isOnReservation}, ReservationCreated: reservation});  
+            // console.log(reservation.task.attributes)      // {foo: 'bar', baz: 'bang' }
+            console.log("reservation.created " + reservation.reservationStatus + '  ' + reservation.task.assignmentStatus)        // 1;
+            console.log();
+            // console.log(reservation.task.age)             // 300
+            // console.log(reservation.task.sid)             // WTxxx
+            // console.log(reservation.sid)                  // WRxxx
+            currentReservation = reservation;
+            alertSound.loop = true;
+            alertSound.play();
+            // if (iconChanger) {
+            //   clearInterval(iconChanger);
+            // }
+            // iconChanger = setInterval(changeIcon, 500);
+            isIncomingCall = true;
+           console.log("reservation.created " + reservation);
          });
  
          worker.on("reservation.accepted", function(reservation) {
@@ -354,47 +471,47 @@
          });
  
          worker.on("reservation.rejected", function(reservation) {
-          //  isOnReservation = false;
-          //  chrome.runtime.sendMessage({isRervationActive: {isReservationAvailable: isOnReservation}});  
+           isOnReservation = false;
+           chrome.runtime.sendMessage({isRervationActive: {isReservationAvailable: isOnReservation}});  
            console.log("reservation.rejected " + reservation);
          });
  
          worker.on("reservation.timeout", function(reservation) {
-          //  isOnReservation = false;
-          //  chrome.runtime.sendMessage({isRervationActive: {isReservationAvailable: isOnReservation}});  
-          //  alertSound.pause();
+           isOnReservation = false;
+           chrome.runtime.sendMessage({isRervationActive: {isReservationAvailable: isOnReservation}});  
+           alertSound.pause();
           //  clearInterval(iconChanger);
           //  setTimeout(function(){ 
           //    chrome.browserAction.setIcon({path: icons.disabled});
           //  }, 1000);
-          //  isIncomingCall = false;
-          //  chrome.runtime.sendMessage({output: 'callRejected'});
+           isIncomingCall = false;
+           chrome.runtime.sendMessage({output: 'callRejected'});
            console.log("reservation.timeout " + reservation);
          });
  
          worker.on("reservation.canceled", function(reservation) {
-          //  isOnReservation = false;
-          //  chrome.runtime.sendMessage({isRervationActive: {isReservationAvailable: isOnReservation}});  
-          //  alertSound.pause();
+           isOnReservation = false;
+           chrome.runtime.sendMessage({isRervationActive: {isReservationAvailable: isOnReservation}});  
+           alertSound.pause();
           //  clearInterval(iconChanger);
           //  setTimeout(function(){ 
           //    chrome.browserAction.setIcon({path: icons.disabled});
           //  }, 1000);
-          //  isIncomingCall = false;
-          //  chrome.runtime.sendMessage({output: 'callRejected'});
+           isIncomingCall = false;
+           chrome.runtime.sendMessage({output: 'callRejected'});
            console.log("reservation.canceled " + reservation);
          });
  
          worker.on("reservation.rescinded", function(reservation) {
-          //  isOnReservation = false;
-          //  chrome.runtime.sendMessage({isRervationActive: {isReservationAvailable: isOnReservation}});  
-          //  alertSound.pause();
+           isOnReservation = false;
+           chrome.runtime.sendMessage({isRervationActive: {isReservationAvailable: isOnReservation}});  
+           alertSound.pause();
           //  clearInterval(iconChanger);
           //  setTimeout(function(){ 
           //    chrome.browserAction.setIcon({path: icons.disabled});
           //  }, 1000);
-          //  isIncomingCall = false;
-          //  chrome.runtime.sendMessage({output: 'callRejected'});
+           isIncomingCall = false;
+           chrome.runtime.sendMessage({output: 'callRejected'});
            console.log("reservation.rescinded " + reservation); 
          });
       }
@@ -434,6 +551,7 @@
 
       this.device.on('error', (error) => {
         alertSound.pause();
+        isOnOutgoingCall = false;
         // clearInterval(iconChanger);
         setTimeout(function(){ 
           chrome.browserAction.setIcon({path: icons.disabled});
@@ -450,25 +568,25 @@
   
       this.device.on('connect', () => {
         console.log('INFO', 'Connection established');
-        // if (!isOnReservation) {
-        //   // calledTimer = setInterval(setTime, 1000);
-        //   // console.log('timer started from device onconnect ' + totalSeconds);
-        //   onOutgoingCall = true;
-        //   chrome.runtime.sendMessage({output: 'outgoingCallPicked'});
-        // }
+        if (!isOnReservation) {
+          calledTimer = setInterval(setTime, 1000);
+          console.log('timer started from device onconnect ' + totalSeconds);
+          isOnOutgoingCall = true;
+          chrome.runtime.sendMessage({output: 'outgoingCallPicked'});
+        }
       });
   
       this.device.on('disconnect', () => {
-        // if (!isOnReservation) {
-        //   isOnOutgoingCall = false;
-        //   chrome.runtime.sendMessage({output: 'outgoingCallDropped'});
-        //   onOutgoingCall = false;
-        //   clearInterval(calledTimer);
-        //   outgoingConnection = null;
-        //   resetValues();        
-        //   console.log('INFO', 'Call disconnected');
-        //   this.device.disconnectAll();
-        // }       
+        console.log('INFO', 'Connection Disconnected');
+        if (!isOnReservation) {
+          chrome.runtime.sendMessage({output: 'outgoingCallDropped'});
+          clearInterval(calledTimer);
+          resetValues();        
+          // outgoingConnection = null;
+          // isOnOutgoingCall = false;
+          console.log('INFO', 'Call disconnected');
+          this.device.disconnectAll();
+        }       
       });
   
       this.device.on('cancel', () => {
@@ -481,4 +599,4 @@
       });
     } 
   }
-})();
+// })();

@@ -13,55 +13,31 @@ export class Login extends Component {
         super(props)
         this.state = {
             email: 'rakesh.kumar+twilio@builder.ai',
-            password: '12345678'
+            password: '12345678',
+            errLoginMsg: '',
+            disabled: false
         }
         this.submitHandler = this.submitHandler.bind(this);
         this.geoData = {};
     }
 
-    getGeoInfo = () => {
-        // axios.get('https://extreme-ip-lookup.com/json/')
-        //     .then(response => {
-        //         this.geoData = response.data;
-        //         // console.log(response);
-        // })
-        // .catch(e => {
-        //     console.log(e);
-        // });
-        axios.get('https://ipinfo.io/json?token=b95957ab545c08')
-            .then(response => {
-                this.geoData = response.data;
-                // console.log(response);
-        })
-        .catch(e => {
-            console.log(e);
-        });
-        // axios.get('https://ipapi.co/json/').then((response) => {
-        //     console.log(response);
-        //     this.geoData = response.data;
-        // }).catch((error) => {
-        //     console.log(error);
-        // });
-    };
-
     componentDidMount() {
-        this.getGeoInfo();
     }
 
     changeHandler = e => {
-        this.setState({ [e.target.name]: e.target.value })
+        this.setState({ [e.target.name]: e.target.value, errLoginMsg: '' });
     }
 
     submitHandler = e => {
-        this.getGeoInfo();
+        this.setState({disabled: true});
         e.preventDefault();
-        console.log(this.state);
         axios.post(process.env.REACT_APP_SignInUrl, this.state)
         .then(response => {
             const loginResponse = response.data.response.data;
             const userToken = loginResponse.access_token;
             if (userToken) {
                 Global.isUserAuthenticated = true;
+                this.setState({errLoginMsg: '', disabled: false});
                 var user = {
                     isUserAuthenticated: true,
                     token: userToken,
@@ -69,7 +45,11 @@ export class Login extends Component {
                     workerToken: loginResponse.worker_token,
                     offline_activity_sid: loginResponse.offline_activity_sid,
                     available_activity_sid: loginResponse.available_activity_sid   ,
-                    geoData: this.geoData 
+                    geoData: {
+                        country_code: loginResponse.country_code.toLowerCase(),
+                        dial_code: loginResponse.dial_code,
+                        timezone: loginResponse.timezone
+                    } 
                   };
                   this.props.onSubmission(user);
                 //   this.setState({userData: user});
@@ -80,7 +60,17 @@ export class Login extends Component {
             chrome.runtime.sendMessage({ userAuthentication: user });
         })
         .catch(error => {
-            console.log(error);
+            if (error.response) {
+                console.log(error.response);
+                this.setState({errLoginMsg: error?.response?.data?.response?.message, disabled: false});
+                console.log(error.response.data.response.message);
+              } else if (error.request) {
+                this.setState({disabled: false});
+                console.log(error.request);
+              } else {
+                this.setState({disabled: false});
+                console.log(error);
+              }
         })
     }
 
@@ -92,7 +82,7 @@ export class Login extends Component {
                 <form onSubmit={this.submitHandler}>
                     <div className='loginBox screen1'>
                     <h1 className='title'> Welcome,<br/> Login to Builder Dial</h1>
-                    <div><label id='errLoginMsg' style={{color: 'red'}}></label></div>
+                    <div><label id='errLoginMsg' style={{color: 'red'}}>{this.state.errLoginMsg}</label></div>
                         <div className='inputBlock'>
                             <div>
                                 <label htmlFor="email">Email</label>
@@ -121,7 +111,8 @@ export class Login extends Component {
                             <button 
                             className="brandbtn signIn"
                             type="submit" 
-                            value="SignIn">Login </button>
+                            value="SignIn"
+                            disabled={this.state.disabled} >{this.state.disabled ? 'Logging...' : 'Login'} </button>
                         </div>
                     </div>
                 </form>

@@ -20,12 +20,14 @@ export class HomePage extends Component {
     }
 
     componentDidMount() {
-        chrome.storage.local.get(null, (data) => {
-            console.log('Data fetched from chrome ' + data.userData.isUserAuthenticated);
-            this.setState({isUserAuthenticated: data.userData.isUserAuthenticated, userData: data.userData});
-            console.log(this.state);
-        });
-        console.log(chrome.extension);
+        let bg = chrome.extension.getBackgroundPage();
+        // chrome.storage.local.get(null, (data) => {
+        //     console.log('Data fetched from chrome ' + data.userData.isUserAuthenticated);
+        //     this.setState({isUserAuthenticated: data.userData.isUserAuthenticated, userData: data.userData});
+        //     console.log(this.state);
+        // });
+        this.setState({isUserAuthenticated: bg.isUserAuthenticated, userData: bg.userData});
+        // console.log(chrome.extension);
     }
 
     handleData(data) {
