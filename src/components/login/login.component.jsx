@@ -12,8 +12,10 @@ export class Login extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            email: 'rakesh.kumar+twilio@builder.ai',
-            password: '12345678',
+            login : {
+                email: 'rakesh.kumar+twilio@builder.ai',
+                password: '12345678',
+            },
             errLoginMsg: '',
             disabled: false
         }
@@ -31,7 +33,7 @@ export class Login extends Component {
     submitHandler = e => {
         this.setState({disabled: true});
         e.preventDefault();
-        axios.post(process.env.REACT_APP_SignInUrl, this.state)
+        axios.post(process.env.REACT_APP_SignInUrl, this.state.login)
         .then(response => {
             const loginResponse = response.data.response.data;
             const userToken = loginResponse.access_token;
@@ -46,7 +48,7 @@ export class Login extends Component {
                     offline_activity_sid: loginResponse.offline_activity_sid,
                     available_activity_sid: loginResponse.available_activity_sid   ,
                     geoData: {
-                        country_code: loginResponse.country_code.toLowerCase(),
+                        country_code: loginResponse?.country_code?.toLowerCase(),
                         dial_code: loginResponse.dial_code,
                         timezone: loginResponse.timezone
                     } 
@@ -75,7 +77,7 @@ export class Login extends Component {
     }
 
     render() {
-        const { email, password } = this.state;
+        const { email, password } = this.state.login;
 
         return (
             <div className='login'>

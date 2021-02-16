@@ -19,15 +19,15 @@ export class Dashboard extends Component {
             showSetting: false,
             isUserAuthenticated: props?.userData?.isUserAuthenticated
         }
-        console.log(props);
         this.triggerLogOut = this.triggerLogOut.bind(this);
     }
 
     componentDidMount() {
-        let bg = chrome.extension.getBackgroundPage();
-        this.setState({
-            footer_navigation: ((!bg.deviceOffline && bg.isUserAuthenticated) ? false : true)
-        })
+        // let bg = chrome.extension.getBackgroundPage();
+        // console.log(bg);
+        // this.setState({
+        //     footer_navigation: ((!bg.deviceOffline && bg.isUserAuthenticated) ? true : false)
+        // }, () => console.log('footer ' + this.state.footer_navigation))
       }
 
     displaySection = (sectionName) => {
@@ -63,7 +63,7 @@ export class Dashboard extends Component {
                         : null
                 }
                 </div>
-                <div style={{ display: (this.state.footer_navigation ? 'block' : 'none') }}>
+                <div>
                     <div className="dialpad-footer">
                         <div className="ftrListing">
                         <button type="button" className="show_history" onClick={() => this.displaySection('calllogs')}> 

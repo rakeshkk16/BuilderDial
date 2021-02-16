@@ -21,7 +21,7 @@ export class DialPad extends Component {
           phone: "" ,
           rawPhone: "",
           staticNumber:'',
-          dialCode: this.props.geoData.dial_code,
+          dialCode: this.props?.geoData?.dial_code,
           makeCall: true,
           gettingCall: false,
           onCall: false,
@@ -39,6 +39,13 @@ export class DialPad extends Component {
           minutesLabel: '',
           secondsLabel: ''
         };
+      
+      this.icons = {
+        enabled: {
+          '32': './icons/B48.png',
+          '16': './icons/B16.png'
+        }
+      };
       this.onCallClick = this.onCallClick.bind(this);
       this.onHangUpClick = this.onHangUpClick.bind(this);
       this.onAcceptCall = this.onAcceptCall.bind(this);
@@ -51,18 +58,21 @@ export class DialPad extends Component {
       this.handleMessage = this.handleMessage.bind(this);
       this.checkDeviceSetup = this.checkDeviceSetup.bind(this);
       this.setTime = this.setTime.bind(this);
+      this.resetTimer = this.resetTimer.bind(this);
+      this.countTimer = this.countTimer.bind(this);
+      this.onMuteToggle = this.onMuteToggle.bind(this);
     }
 
     setTime() {
-      console.log('setTime called');
+      // console.log('setTime called');
       this.setState({
         totalSeconds: (this.state.totalSeconds + 1),
-        secondsLabel: this.pad(this.state.totalSeconds % 60),
-        minutesLabel: this.pad(parseInt(this.state.totalSeconds / 60))
+        secondsLabel: this.countTimer(this.state.totalSeconds % 60),
+        minutesLabel: this.countTimer(parseInt(this.state.totalSeconds / 60))
       });
     }
 
-    pad(val) {
+    countTimer(val) {
       var valString = val + "";
       if (valString.length < 2) {
         return "0" + valString;
@@ -71,15 +81,18 @@ export class DialPad extends Component {
       }
     }
 
+    resetTimer() {
+      this.setState({minutesLabel: '00', secondsLabel: '00', totalSeconds: 0});
+    }
+
     handleMessage(request) {
       console.log(request);
       switch (request.output) {
         case 'callRejected':
           console.log('outgoing call rejected switch');
-          this.setState({makeCall: true, onCall: false, gettingCall: false});
-          // this.setState({rawPhone: '', makeCall: true});
-          // clearInterval(callTimer);
-          // resetTimer();
+          this.setState({makeCall: true, onCall: false, gettingCall: false, showDialPad: true});
+          clearInterval(this.state.callTimer);
+          this.resetTimer();
           // showHideElement([
           //   {name: 'showTimer', flag: false},
           //   {name: 'mute_dialpad', flag: false},
@@ -101,6 +114,7 @@ export class DialPad extends Component {
         case 'outgoingCallDropped':
           console.log('outgoing switch');
           clearInterval(this.state.callTimer);
+          console.log(this.state.phone);
           this.setState({
             phone: this.state.phone.slice(0, -(this.state.rawPhone.length)),
             rawPhone: '',
@@ -108,7 +122,7 @@ export class DialPad extends Component {
             onCall: false,
             gettingCall: false,
             isOnOutgoingCall: false
-          });
+          }, () => console.log(this.state.phone));
           break;
         default:
           break;
@@ -137,13 +151,18 @@ export class DialPad extends Component {
         // setDialNumber(reservation.task.attributes.caller);
         // document.getElementById('incomingCallBox').style.display = 'block';
         // document.getElementById('outgoingCallBox').style.display = 'none';
+        console.log(this.state.gettingCall + ' ' + this.state.makeCall + ' ' + this.state.onCall);
       } else if (request.isRervationActive) {
         this.setState({isReservationAvailable: request.isRervationActive.isReservationAvailable});
       }
      }
 
     componentDidMount() {
+      if (this.state.dialCode) {
+        chrome.runtime.sendMessage({ dialCode: this.state.dialCode });
+      }
       chrome.runtime.onMessage.addListener(this.handleMessage);
+      console.log(this.state.gettingCall + ' ' + this.state.makeCall + ' ' + this.state.onCall);
       let bg = chrome.extension.getBackgroundPage();
       // document.getElementById('incomingphoneNumber').innerText =  this.state.rawPhone;
       this.checkDeviceSetup(bg);
@@ -214,7 +233,7 @@ export class DialPad extends Component {
           //   { name: 'outgoingCallBox', flag: false },
           //   { name: 'dial_keypad_box', flag: false }          
           // ]);
-          // chrome.browserAction.setIcon({ path: icons.enabled });
+          chrome.browserAction.setIcon({ path: this.icons.enabled});
           // setDialNumber(reservation.task.attributes.caller);
           // showHideCallButtons('a');
           // console.log('showHideCallButtons to show accept for incoming call');
@@ -233,7 +252,7 @@ export class DialPad extends Component {
         bgValues: bg,
         deviceView: (bg.deviceObject ? bg.deviceObject : this.state.deviceView),
         isOnOutgoingCall: bg.isOnOutgoingCall,
-        makeCall: (bg.isOnOutgoingCall ? false : true),
+        makeCall: ((bg.isOnOutgoingCall || bg.isIncomingCall || bg.onCall) ? false : true),
         onCall: ((bg.isOnOutgoingCall || bg.onCall) ? true : false),
         gettingCall: (bg.isIncomingCall ? true : false),
         isReservationAvailable: bg.isOnReservation,
@@ -243,7 +262,9 @@ export class DialPad extends Component {
         deviceOffline: bg.deviceOffline,
         muteValue: bg.muteValue,
         totalSeconds: bg.totalSeconds,
-        staticNumber: bg.outgoingConnection?.message?.phoneNumber,
+        staticNumber: ((bg.outgoingConnection || bg.currentReservation) ? (bg.outgoingConnection ? bg.outgoingConnection?.message?.phoneNumber : bg.currentReservation.task.attributes.caller) : this.state.staticNumber),
+        callTimer: ((bg.isOnOutgoingCall || bg.onCall) ? setInterval(this.setTime, 1000) : this.state.callTimer),
+        dialCode: (this.state.dialCode) ? this.state.dialCode : bg.dialCode
         // errLoginMsg: (bg.deviceOffline ? 'Device is offline Please login again or Contact Support Team' : '')
       })
 
@@ -263,8 +284,8 @@ export class DialPad extends Component {
         }
         // document.getElementById('showTimer').style.display = 'block';
         // if (bg.isonOutgoingCall) {
-        //   totalSeconds = bg.totalSeconds;
-        //   callTimer = setInterval(setTime, 1000);
+        //   // totalSeconds = bg.totalSeconds;
+        //   // callTimer = setInterval(setTime, 1000);
         // }
         // showHideCallButtons('h');
         console.log('showHideCallButtons to show hangup for existing outgoing conn');
@@ -304,7 +325,7 @@ export class DialPad extends Component {
 
     onRejectCall() {
       // setDialNumber('');
-      // clearInterval(callTimer);
+      clearInterval(this.state.callTimer);
       chrome.runtime.sendMessage({ output: 'Rejected' });
       // document.getElementById('dial_keypad_box').style.display = 'block';
       // document.getElementById('dial_inputnumber').style.display = 'block';
@@ -312,15 +333,20 @@ export class DialPad extends Component {
     }
 
     onAcceptCall() {
-      // clearInterval(callTimer);
-      // resetTimer();
+      clearInterval(this.state.callTimer);
+      this.resetTimer();
       chrome.runtime.sendMessage({ output: 'Accepted' });
-      this.setState({isCallAccepted: true, onCall: true, makeCall: false, gettingCall: false, showDialPad: true});
+      this.setState({
+        isCallAccepted: true, 
+        onCall: true, 
+        makeCall: false,
+        gettingCall: false,
+        showDialPad: true,
+        callTimer: setInterval(this.setTime, 1000)
+      });
       // document.getElementById('showTimer').style.display = 'block';
       // document.getElementById('mute_dialpad').style.display = 'block';
-      // console.log('Set Timer called from incoming call accept');
-      // callTimer = setInterval(setTime, 1000);
-      // showHideCallButtons('h');
+      console.log('Set Timer called from incoming call accept');
       console.log('showHideCallButtons to show hangup on call_accept');
     }
 
@@ -335,7 +361,7 @@ export class DialPad extends Component {
           countryCode: ((this.state.dialCode) ? this.state.dialCode : '+91')
         };      
         chrome.runtime.sendMessage({outgoingObj: outgoingObject});
-        // resetTimer();
+        this.resetTimer();
         // document.getElementById('showTimer').style.display = 'block';
         // if (!fullNumber) {
         //   setDialNumber(document.getElementById('phoneNumber').value);
@@ -356,21 +382,22 @@ export class DialPad extends Component {
       // document.getElementById('phone').style.backgroundColor = "";
       // document.getElementById("phoneNumber").disabled = false;
       // document.getElementById('phoneNumber').style.backgroundColor = "";
-      // if (callTimer) {
-      //   clearInterval(callTimer);
-      // }
+      if (this.state.callTimer) {
+        clearInterval(this.state.callTimer);
+      }
       console.log(this.state.deviceView);
       // this.state.deviceView.device.disconnectAll();
       chrome.runtime.sendMessage({ output: 'OnHangUp' });
-      this.setState({
-        phone: this.state.phone.slice(0, -(this.state.rawPhone.length)),
-        makeCall: true, 
-        onCall: false, 
-        gettingCall: false,
-        rawPhone: '',
-        showDialPad: true,
-        isOnOutgoingCall: false
-      });
+      // console.log(this.state.phone)
+      // this.setState({
+      //   phone: this.state.phone.slice(0, -(this.state.rawPhone.length)),
+      //   makeCall: true, 
+      //   onCall: false, 
+      //   gettingCall: false,
+      //   rawPhone: '',
+      //   showDialPad: true,
+      //   isOnOutgoingCall: false
+      // }, () => console.log(this.state.phone));
       // showHideElement([
       //   { name: 'dial_keypad_box', flag: true },
       //   { name: 'dial_inputnumber', flag: true },
@@ -381,6 +408,33 @@ export class DialPad extends Component {
       // ]);
       // isOnOutgoingCall = false;
       // document.getElementById("signOutSection").style.backgroundColor = "";
+    }
+
+    onMuteToggle() {
+      var toggleMuteValue = '';
+      console.log('before ' + this.state.muteValue);
+      if (this.state.bgValues.outgoingConnection) {
+        console.log('outgoing conn');
+        this.setState({
+          muteValue: !this.state.muteValue}, 
+          () => {
+            chrome.runtime.sendMessage({ muteCall: { muteCallFlag: this.state.muteValue } });
+            toggleMuteValue = {toggleValue : this.state.muteValue};
+            chrome.runtime.sendMessage({toggleMute: toggleMuteValue});
+          }
+        );
+        
+        // this.state.bgValues.outgoingConnection.mute(this.state.muteValue);
+      } else {
+        console.log('incoming conn');
+        this.setState({
+          muteValue: !this.state.muteValue}, 
+          () => {
+            chrome.runtime.sendMessage({ muteCall: { muteCallFlag: this.state.muteValue } });
+            this.state.bgValues.deviceConnection.activeConnection().mute(this.state.muteValue);
+          }
+        );        
+      }      
     }
 
     onToggleDialPad() {
@@ -421,7 +475,7 @@ export class DialPad extends Component {
                           </tbody>
                         </table> 
                       </div>                
-                      <span id="showTimer" style={{ display: (this.state.onCall ? 'block' : 'none') }}><label id="minutes">00</label>:<label id="seconds">00</label></span>
+                      <span id="showTimer" style={{ display: (this.state.onCall ? 'block' : 'none') }}><label id="minutes">{(this.state.minutesLabel ? this.state.minutesLabel: '00')}</label>:<label id="seconds">{(this.state.secondsLabel ? this.state.secondsLabel: '00')}</label></span>
                     </div>
                     <div>
                       <div className="numberBtnBox">
@@ -447,10 +501,10 @@ export class DialPad extends Component {
                             <button className="btn btn-circle btn-default keypad" onClick={() => this.onDialKeyPress('#')}>#</button>
                           </div>
                         </div>
-                        <div id="mute_dialpad" style={{ display: (!this.state.showDialPad ? 'block' : 'none') }}>
+                        <div id="mute_dialpad" style={{ display: (!(this.state.showDialPad || this.state.gettingCall) ? 'block' : 'none') }}>
                             <div className="muteScreen mute_dialkeypad" >
                             <div className="key-row">
-                                <button className={"btn btn-circle btn-default callignored " + (this.state.muteValue ? 'active' : '')}><span className="mute"></span></button>
+                                <button onClick={this.onMuteToggle} className={"btn btn-circle btn-default callignored " + (this.state.muteValue ? 'active' : '')}><span className="mute"></span></button>
                                 <button className="btn btn-circle btn-default" onClick={this.onToggleDialPad}><span className="keybardIcon"></span> </button>
                             </div>
                             </div>

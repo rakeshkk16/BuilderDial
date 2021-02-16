@@ -28,6 +28,8 @@
   var totalSeconds = 0;
   var calledTimer;
   var iconChanger;
+  var dialCode;
+  var muteValue = false;
 
   const icons = {
     small: {
@@ -109,8 +111,8 @@
               }
             );
 
-          // calledTimer = setInterval(setTime, 1000);
-          // clearInterval(iconChanger);
+          calledTimer = setInterval(setTime, 1000);
+          clearInterval(iconChanger);
           setTimeout(function(){ 
             chrome.browserAction.setIcon({path: icons.disabled});
           }, 1000);
@@ -118,8 +120,7 @@
         case 'Rejected':
           console.log(currentReservation);
           if (currentReservation) {
-            currentReservation.reject(
-              function(error, reservation) {
+            currentReservation.reject(function(error, reservation) {
                   if(error) {
                     console.log('Code :' + error.code + ' ' + 'Message :' + error.message);
                       return;
@@ -128,17 +129,16 @@
                   for (var property in reservation) {
                       console.log(property+" : "+reservation[property]);
                   }
-              }
-            );
+            });
           }
           
           alertSound.pause();
-          // clearInterval(iconChanger);
+          clearInterval(iconChanger);
           setTimeout(function(){ 
             chrome.browserAction.setIcon({path: icons.disabled});
           }, 1000);
-          chrome.runtime.sendMessage({output: 'callRejected'});
           console.log('popupjs rejected for Ongoing call as ' + onCall);
+          chrome.runtime.sendMessage({output: 'callRejected'});
           if (onCall) {
             twilioConnection.disconnectAll();
           }
@@ -154,9 +154,9 @@
 
           outgoingConnection = null;
           onCall = false;
-          // clearInterval(calledTimer);
-          // console.log('call timer ' + calledTimer);
-          // resetTimer();
+          clearInterval(calledTimer);
+          console.log('call timer ' + calledTimer);
+          resetTimer();
           break;
         default:
           break;
@@ -183,6 +183,13 @@
           countryCode = request.outgoingObj.countryCode;
           isOnOutgoingCall = true;
           onOutgoingCallClick();
+      } else if (request.dialCode) {
+        dialCode = request.dialCode;
+      } else if (request.muteCall) {
+        console.log('call mute ' + request.muteCall.muteCallFlag);
+        muteValue = request.muteCall.muteCallFlag;
+      } else if (request.toggleMute) {
+        outgoingConnection.mute(request.toggleMute.toggleValue);
       }
     }   
   });
@@ -215,9 +222,9 @@
     outgoingConnection.on('disconnect', function(connectionconn) {
       // console.log('outgoing call disconnected');
       countryCode = '';
-      // if (calledTimer) {
-      //   clearInterval(calledTimer);
-      // }
+      if (calledTimer) {
+        clearInterval(calledTimer);
+      }
     });
 
     outgoingConnection.on('cancel', function(connectionconn) {
@@ -277,6 +284,7 @@
   }
 
   function setTime() {
+    console.log('setTime called');
     ++totalSeconds;
   }
 
@@ -294,6 +302,7 @@
   }
 
   function resetValues() {
+    console.log('reset values called');
     clearInterval(calledTimer);
     clearInterval(iconChanger);
     resetTimer();
@@ -390,80 +399,59 @@
          });
          
          worker.on("task.wrapup", function(task) {
-          //  isOnReservation = false;
-          //  chrome.runtime.sendMessage({isRervationActive: {isReservationAvailable: isOnReservation}});
-          //  if (task.assignmentStatus === 'wrapping') {
-          //     worker.completeTask(task.sid);
-          //  }
+           isOnReservation = false;
+           resetValues();
+           if (task.assignmentStatus === 'wrapping') {
+              worker.completeTask(task.sid);
+           }
            console.log(task);
+           chrome.runtime.sendMessage({isRervationActive: {isReservationAvailable: isOnReservation}});
          });
  
-         worker.on("activity.update", function(worker) {
-           console.log(worker.activityName)   // 'Reserved'
-           console.log(worker.available)       // false
-         });
+        //  worker.on("activity.update", function(worker) {
+        //    console.log(worker.activityName)   // 'Reserved'
+        //    console.log(worker.available)       // false
+        //  });
  
-         worker.on("attributes.update", function(worker) {
-           console.log(worker.activityName)    // 'Reserved'
-           console.log(worker.available)       // false
-         });
+        //  worker.on("attributes.update", function(worker) {
+        //    console.log(worker.activityName)    // 'Reserved'
+        //    console.log(worker.available)       // false
+        //  });
  
-         worker.on("capacity.update", function(channel) {
-           console.log(channel);
-         }); 
+        //  worker.on("capacity.update", function(channel) {
+        //    console.log(channel);
+        //  }); 
  
          worker.on("reservation.created", function(reservation) {
-          //  if(outgoingConnection) {
-          //    isIncomingCall = false;
-          //      reservation.reject(
-          //        function(error, reservation) {
-          //            if(error) {
-          //                console.log(error.code);
-          //                console.log(error.message);
-          //                return;
-          //            }
-          //            console.log("reservation rejected");
-          //            for (var property in reservation) {
-          //                console.log(property+" : "+reservation[property]);
-          //            }
-          //        }
-          //      );
-          //  } else {
-          //    isOnReservation = true;
-          //    chrome.runtime.sendMessage({isRervationActive: {isReservationAvailable: isOnReservation}});  
-          //    // console.log(reservation.task.attributes)      // {foo: 'bar', baz: 'bang' }
-          //    console.log("reservation.created " + reservation.task.priority)        // 1
-          //    // console.log(reservation.task.age)             // 300
-          //    // console.log(reservation.task.sid)             // WTxxx
-          //    // console.log(reservation.sid)                  // WRxxx
-          //    currentReservation = reservation;
-          //    alertSound.loop = true;
-          //    alertSound.play();
-             
-          //    chrome.runtime.sendMessage({ReservationCreated: reservation});  
-          //    if (iconChanger) {
-          //      clearInterval(iconChanger);
-          //    }
-          //    iconChanger = setInterval(changeIcon, 500);
-          //    isIncomingCall = true;
-          //  }
-            isOnReservation = true;
-            chrome.runtime.sendMessage({isRervationActive: {isReservationAvailable: isOnReservation}, ReservationCreated: reservation});  
-            // console.log(reservation.task.attributes)      // {foo: 'bar', baz: 'bang' }
-            console.log("reservation.created " + reservation.reservationStatus + '  ' + reservation.task.assignmentStatus)        // 1;
-            console.log();
-            // console.log(reservation.task.age)             // 300
-            // console.log(reservation.task.sid)             // WTxxx
-            // console.log(reservation.sid)                  // WRxxx
-            currentReservation = reservation;
-            alertSound.loop = true;
-            alertSound.play();
-            // if (iconChanger) {
-            //   clearInterval(iconChanger);
-            // }
-            // iconChanger = setInterval(changeIcon, 500);
-            isIncomingCall = true;
-           console.log("reservation.created " + reservation);
+           if(outgoingConnection) {
+             isIncomingCall = false;
+               reservation.reject(
+                 function(error, reservation) {
+                     if(error) {
+                         console.log(error.code);
+                         console.log(error.message);
+                         return;
+                     }
+                     console.log("reservation rejected");
+                     for (var property in reservation) {
+                         console.log(property+" : "+reservation[property]);
+                     }
+                 }
+               );
+            } else {
+              isOnReservation = true;
+              console.log("reservation.created " + reservation.reservationStatus + '  ' + reservation.task.assignmentStatus)        // 1;
+              currentReservation = reservation;
+              alertSound.loop = true;
+              alertSound.play();
+              if (iconChanger) {
+                clearInterval(iconChanger);
+              }
+              iconChanger = setInterval(changeIcon, 500);
+              isIncomingCall = true;
+              chrome.runtime.sendMessage({isRervationActive: {isReservationAvailable: isOnReservation}, ReservationCreated: reservation});
+              console.log("reservation.created " + reservation);
+            }
          });
  
          worker.on("reservation.accepted", function(reservation) {
@@ -480,26 +468,26 @@
            isOnReservation = false;
            chrome.runtime.sendMessage({isRervationActive: {isReservationAvailable: isOnReservation}});  
            alertSound.pause();
-          //  clearInterval(iconChanger);
-          //  setTimeout(function(){ 
-          //    chrome.browserAction.setIcon({path: icons.disabled});
-          //  }, 1000);
+           clearInterval(iconChanger);
+           setTimeout(function(){ 
+             chrome.browserAction.setIcon({path: icons.disabled});
+           }, 1000);
            isIncomingCall = false;
-           chrome.runtime.sendMessage({output: 'callRejected'});
            console.log("reservation.timeout " + reservation);
+           chrome.runtime.sendMessage({output: 'callRejected'});
          });
  
          worker.on("reservation.canceled", function(reservation) {
            isOnReservation = false;
            chrome.runtime.sendMessage({isRervationActive: {isReservationAvailable: isOnReservation}});  
            alertSound.pause();
-          //  clearInterval(iconChanger);
-          //  setTimeout(function(){ 
-          //    chrome.browserAction.setIcon({path: icons.disabled});
-          //  }, 1000);
+           clearInterval(iconChanger);
+           setTimeout(function(){ 
+             chrome.browserAction.setIcon({path: icons.disabled});
+           }, 1000);
            isIncomingCall = false;
-           chrome.runtime.sendMessage({output: 'callRejected'});
            console.log("reservation.canceled " + reservation);
+           chrome.runtime.sendMessage({output: 'callRejected'});
          });
  
          worker.on("reservation.rescinded", function(reservation) {
@@ -511,8 +499,8 @@
           //    chrome.browserAction.setIcon({path: icons.disabled});
           //  }, 1000);
            isIncomingCall = false;
-           chrome.runtime.sendMessage({output: 'callRejected'});
            console.log("reservation.rescinded " + reservation); 
+           chrome.runtime.sendMessage({output: 'callRejected'});
          });
       }
     }
@@ -535,15 +523,15 @@
       this.device.on('offline', () => {
         console.log('INFO', 'Device Offline');
         alertSound.pause();
-        // clearInterval(iconChanger);
-        // setTimeout(function(){ 
-        //   chrome.browserAction.setIcon({path: icons.disabled});
-        // }, 1000);
-        // clearInterval(calledTimer);
-        // onCall = false;
-        // resetTimer();
-        // deviceOffline = true;  
-        // clearInterval(iconChanger);
+        clearInterval(iconChanger);
+        setTimeout(function(){ 
+          chrome.browserAction.setIcon({path: icons.disabled});
+        }, 1000);
+        clearInterval(calledTimer);
+        onCall = false;
+        resetTimer();
+        deviceOffline = true;  
+        clearInterval(iconChanger);
         setTimeout(function(){ 
           chrome.browserAction.setIcon({path: icons.offline});
         }, 1500);
@@ -556,8 +544,8 @@
         setTimeout(function(){ 
           chrome.browserAction.setIcon({path: icons.disabled});
         }, 1000);
+        console.log('ERROR', `${error.message} (${error.code})`);
         chrome.runtime.sendMessage({output: 'callRejected'});
-        console.log('ERROR', `${error.message} (${error.code})`)
         if (error && (error.code === 31205 || error.code === 31202)){
           pageInit();
           console.log('INFO Token Expired. Re-Initializing Device');
@@ -580,10 +568,10 @@
         console.log('INFO', 'Connection Disconnected');
         if (!isOnReservation) {
           chrome.runtime.sendMessage({output: 'outgoingCallDropped'});
-          clearInterval(calledTimer);
+          // clearInterval(calledTimer);
           resetValues();        
-          // outgoingConnection = null;
-          // isOnOutgoingCall = false;
+          outgoingConnection = null;
+          isOnOutgoingCall = false;
           console.log('INFO', 'Call disconnected');
           this.device.disconnectAll();
         }       
