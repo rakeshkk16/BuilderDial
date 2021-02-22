@@ -14,12 +14,15 @@ export class Dashboard extends Component {
             password: '',
             countryName: '',
             regionName: '',
+            callObject: '',
             showCalls: false,
             showDialPad: true,
             showSetting: false,
             isUserAuthenticated: props?.userData?.isUserAuthenticated
         }
         this.triggerLogOut = this.triggerLogOut.bind(this);
+        this.onCallFromLogs = this.onCallFromLogs.bind(this);
+        this.displaySection = this.displaySection.bind(this);
     }
 
     componentDidMount() {
@@ -44,6 +47,11 @@ export class Dashboard extends Component {
         console.log(data);
     }
 
+    onCallFromLogs(data) {
+        this.setState({callObject: data});
+        this.displaySection('dialpad');
+    }
+
     render() {
 
         return (
@@ -51,11 +59,11 @@ export class Dashboard extends Component {
                 <div>
                 {console.log('logged status ' + this.props.isLoggedIn + ' show call ' + this.state.showCalls + ' show dialpad ' + this.state.showDialPad + ' show setting ' + this.state.showSetting )}
                 {   this.state.showCalls 
-                        ? <CallHistory userData={this.props?.userData}></CallHistory>
+                        ? <CallHistory callFromLogs={this.onCallFromLogs} userData={this.props?.userData}></CallHistory>
                         : null
                 }
                 {   this.state.showDialPad 
-                        ? <DialPad geoData={this.props?.userData?.geoData}></DialPad>
+                        ? <DialPad geoData={this.props?.userData?.geoData} callObject={this.state.callObject}></DialPad>
                         : null
                 }
                 {   this.state.showSetting 

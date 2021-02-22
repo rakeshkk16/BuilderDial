@@ -30,6 +30,7 @@
   var iconChanger;
   var dialCode;
   var muteValue = false;
+  var userData;
 
   const icons = {
     small: {
@@ -172,6 +173,7 @@
           offline_Activity_SID = request.userAuthentication.offline_activity_sid;
           userToken = request.userAuthentication.token;
           userID = request.userAuthentication.userID;
+          userData = request.userAuthentication;
           pageInit();
         } else {
           isUserAuthenticated = request.userAuthentication.isUserAuthenticated;

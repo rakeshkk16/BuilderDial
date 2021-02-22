@@ -26,7 +26,7 @@ export class HomePage extends Component {
         //     this.setState({isUserAuthenticated: data.userData.isUserAuthenticated, userData: data.userData});
         //     console.log(this.state);
         // });
-        this.setState({isUserAuthenticated: bg.isUserAuthenticated, userData: bg.userData});
+        this.setState({isUserAuthenticated: bg.isUserAuthenticated, userData: bg.userData}, () => console.log(this.state));
         // console.log(chrome.extension);
     }
 

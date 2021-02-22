@@ -61,6 +61,16 @@ export class DialPad extends Component {
       this.resetTimer = this.resetTimer.bind(this);
       this.countTimer = this.countTimer.bind(this);
       this.onMuteToggle = this.onMuteToggle.bind(this);
+      this.initializePage = this.initializePage.bind(this);
+    }
+
+    initializePage() {
+      chrome.runtime.sendMessage({ dialCode: (this.props.callObject ? this.props.callObject.countryCode : this.state.dialCode) });
+      chrome.runtime.onMessage.addListener(this.handleMessage);
+      console.log(this.state.gettingCall + ' ' + this.state.makeCall + ' ' + this.state.onCall);
+      let bg = chrome.extension.getBackgroundPage();
+      // document.getElementById('incomingphoneNumber').innerText =  this.state.rawPhone;
+      this.checkDeviceSetup(bg);
     }
 
     setTime() {
@@ -158,15 +168,14 @@ export class DialPad extends Component {
      }
 
     componentDidMount() {
-      if (this.state.dialCode) {
-        chrome.runtime.sendMessage({ dialCode: this.state.dialCode });
+      console.log('dialpad');
+      console.log(this.props.callObject);
+      this.initializePage();
+      if (this.props.callObject) {
+        console.log('onCall is called');
+        this.setState({rawPhone: this.props.callObject.number});
+        this.onCallClick();
       }
-      chrome.runtime.onMessage.addListener(this.handleMessage);
-      console.log(this.state.gettingCall + ' ' + this.state.makeCall + ' ' + this.state.onCall);
-      let bg = chrome.extension.getBackgroundPage();
-      // document.getElementById('incomingphoneNumber').innerText =  this.state.rawPhone;
-      this.checkDeviceSetup(bg);
-
     }
 
     checkDeviceSetup(bg) {
@@ -351,28 +360,26 @@ export class DialPad extends Component {
     }
 
     onCallClick() {
-      // console.log(chrome.extension.getBackgroundPage().isUserAuthenticated);
-      console.log(chrome.extension.getBackgroundPage());
-      console.log('dialed number ' + this.state.rawPhone + ' full no ' + this.state.phone);
-      if (this.state.rawPhone && this.state.rawPhone.length > 0) {
-        var outgoingObject = {
-          number: this.state.rawPhone,
-          isoCode: ((this.props?.geoData?.country_code) ? this.props.geoData.country_code : 'in'),
-          countryCode: ((this.state.dialCode) ? this.state.dialCode : '+91')
-        };      
-        chrome.runtime.sendMessage({outgoingObj: outgoingObject});
+      if ((this.state.rawPhone && this.state.rawPhone.length > 0) || (this.props.callObject.number && this.props.callObject.number.length > 0)) {
+        if(this.props.callObject) {
+          console.log('message passed');
+          chrome.runtime.sendMessage({outgoingObj: this.props.callObject});
+        } else {
+          console.log('message passed from existing');
+          var outgoingObject = {
+            number: this.state.rawPhone,
+            isoCode: ((this.props?.geoData?.country_code) ? this.props.geoData.country_code : 'in'),
+            countryCode: ((this.state.dialCode) ? this.state.dialCode : '+91')
+          };      
+          chrome.runtime.sendMessage({outgoingObj: outgoingObject});
+        }      
         this.resetTimer();
-        // document.getElementById('showTimer').style.display = 'block';
-        // if (!fullNumber) {
-        //   setDialNumber(document.getElementById('phoneNumber').value);
-        // }
-        // console.log('INFO', 'Calling ' + fullNumber);
         this.setState({
           makeCall: false,
           onCall: true,
           gettingCall: false,
           isOnOutgoingCall: true,
-          staticNumber: this.state.dialCode + this.state.rawPhone
+          staticNumber: this.state.dialCode + (this.state.rawPhone ? this.state.rawPhone : this.props.callObject.number)
         });
       }
     }
