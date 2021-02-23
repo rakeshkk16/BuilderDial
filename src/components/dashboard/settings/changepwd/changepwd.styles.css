@@ -1,0 +1,16 @@
+.changepwdBox{display: flex; flex-direction: column; justify-content: space-between; min-height: 354px; box-sizing: border-box; margin: 45px 0; padding: 20px 20px; height: 490px; box-sizing: border-box; overflow-x: hidden; overflow-y: hidden;}
+.changepwdBox .inputBlock>div{margin-bottom: 30px;}
+.changepwdBox .inputBlock label{margin-bottom: 8px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; font-weight: 500;  font-size: 12px;}
+.changepwdBox .inputBlock label span{color: #651FFF;}
+
+.changepwdBox .inputBlock input{background: #FFFFFF; border: 1px solid #C0C3CE; box-sizing: border-box; border-radius: 3px; color: #000; height: 40px; padding: 0 16px; color: #000; font-size: 14px; width: 100%;  }
+.changepwdBox .inputBlock input.password{font-size: 28px;  }
+.changepwdBox .inputBlock input:focus{outline-color:#651FFF;} 
+
+.actionBox{margin: 10px 0; text-align: center;}
+.extra-msg.showRegistration, .extra-msg.showLogin{font-weight: 500; cursor: pointer;}
+
+.extra-msg, .txt{font-size: 12px; padding: 0; margin:10px 0 0 0; color: #9B9FB1;   }
+.extra-msg span, .txt span{color:#651FFF; cursor: pointer;  }
+.brandbtn{height: 50px; cursor: pointer; background: #00D659; border-radius: 3px; color: #000; font-size: 14px; border: none; width: 100%; font-weight: 500;font-family: 'Rubik', sans-serif;}
+.brandbtn:focus{outline: none; border: none;}

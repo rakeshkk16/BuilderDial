@@ -21,9 +21,6 @@ export class CallHistory extends Component {
         this.handler = this.handler.bind(this)
     }
 
-    componentDidUpdate() {
-    }
-
     componentDidMount() {
         this.setState({fetchInProgress : true});
         const data = this.props.userData;
@@ -55,6 +52,10 @@ export class CallHistory extends Component {
         })
     }
 
+    componentWillUnmount() {
+        this.props.callFromLogs('');
+    }
+
     render() {
         return (
             <div className="midblock customScrollY historymainBox" id="show_history_setting">
@@ -67,7 +68,7 @@ export class CallHistory extends Component {
                             <div id="callHistoryList" className="callHistoryList">
                                 <ul className='callHistoryListing'>
                                     {this.state.callList.map(call => (
-                                        <CallRecord key={call.id} handler = {this.handler} sectionID={this.state.sectionID} call={call}  onCallClicked={this.callFromCallHistory}></CallRecord>
+                                        <CallRecord key={call.id} token={this.props.userData.token} handler = {this.handler} sectionID={this.state.sectionID} call={call}  onCallClicked={this.callFromCallHistory}></CallRecord>
                                     ))}
                                 </ul>                    
                             </div>

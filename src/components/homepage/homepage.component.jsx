@@ -27,7 +27,7 @@ export class HomePage extends Component {
         //     console.log(this.state);
         // });
         this.setState({isUserAuthenticated: bg.isUserAuthenticated, userData: bg.userData}, () => console.log(this.state));
-        // console.log(chrome.extension);
+        console.log('homepage ngOnInit');
     }
 
     handleData(data) {
@@ -39,6 +39,7 @@ export class HomePage extends Component {
     }
 
     render() {
+        console.log('homepage rendered');
         return (
                <div>
                     {

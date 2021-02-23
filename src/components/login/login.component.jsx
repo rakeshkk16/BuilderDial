@@ -66,13 +66,13 @@ export class Login extends Component {
                 console.log(error.response);
                 this.setState({errLoginMsg: error?.response?.data?.response?.message, disabled: false});
                 console.log(error.response.data.response.message);
-              } else if (error.request) {
+            } else if (error.request) {
                 this.setState({disabled: false});
                 console.log(error.request);
-              } else {
+            } else {
                 this.setState({disabled: false});
                 console.log(error);
-              }
+            }
         })
     }
 

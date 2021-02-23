@@ -74,7 +74,6 @@ export class DialPad extends Component {
     }
 
     setTime() {
-      // console.log('setTime called');
       this.setState({
         totalSeconds: (this.state.totalSeconds + 1),
         secondsLabel: this.countTimer(this.state.totalSeconds % 60),
@@ -161,15 +160,12 @@ export class DialPad extends Component {
         // setDialNumber(reservation.task.attributes.caller);
         // document.getElementById('incomingCallBox').style.display = 'block';
         // document.getElementById('outgoingCallBox').style.display = 'none';
-        console.log(this.state.gettingCall + ' ' + this.state.makeCall + ' ' + this.state.onCall);
       } else if (request.isRervationActive) {
         this.setState({isReservationAvailable: request.isRervationActive.isReservationAvailable});
       }
      }
 
     componentDidMount() {
-      console.log('dialpad');
-      console.log(this.props.callObject);
       this.initializePage();
       if (this.props.callObject) {
         console.log('onCall is called');
@@ -256,7 +252,6 @@ export class DialPad extends Component {
   
 
     initializeBackgroundValues(bg) {
-      console.log(bg);
       this.setState({
         bgValues: bg,
         deviceView: (bg.deviceObject ? bg.deviceObject : this.state.deviceView),
@@ -362,10 +357,8 @@ export class DialPad extends Component {
     onCallClick() {
       if ((this.state.rawPhone && this.state.rawPhone.length > 0) || (this.props.callObject.number && this.props.callObject.number.length > 0)) {
         if(this.props.callObject) {
-          console.log('message passed');
           chrome.runtime.sendMessage({outgoingObj: this.props.callObject});
         } else {
-          console.log('message passed from existing');
           var outgoingObject = {
             number: this.state.rawPhone,
             isoCode: ((this.props?.geoData?.country_code) ? this.props.geoData.country_code : 'in'),
@@ -449,6 +442,7 @@ export class DialPad extends Component {
     }
 
     render() {
+      console.log('DialPage rendered ');
         return (
             <div className="midblock dialPadMainBox customScrollY" id="spageInit();how_dialpad">
                  <div className="keys" id="dialpad">
@@ -517,7 +511,7 @@ export class DialPad extends Component {
                             </div>
                         </div>
                       </div>
-                      <div id="resetdialdelete" style={{ display: (this.state.makeCall ? 'block' : 'none') }}>
+                      <div id="resetdialdelete" style={{ display: (this.state.makeCall ? 'block' : 'none'), marginLeft: '1.1rem' }}>
                         <div className="key-row dialAction">
                           <button className="btn" id="reload_active">
                             {(this.state.rawPhone && this.state.rawPhone.length > 0 )
@@ -536,7 +530,7 @@ export class DialPad extends Component {
                         </div>
                       </div>
                       
-                        <div id="disconnecthide" style={{ display: (this.state.onCall ? 'block' : 'none') }}>
+                        <div id="disconnecthide" style={{ display: (this.state.onCall ? 'block' : 'none'), marginRight: (this.state.showDialPad ? '1.7rem': '6rem') }}>
                             <div className="key-row dialAction dialAction2">
                                 <button className="btn"></button>
                                 <button className="btn" onClick={this.onHangUpClick}><span className="disconnect"></span></button>

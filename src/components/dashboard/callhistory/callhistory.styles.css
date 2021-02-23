@@ -3,6 +3,7 @@
 .pageLoader img{width: 100%; max-width: 80px;}
 
 .historymainBox{padding: 0; margin: 45px 0 59px 0;}
+.historymainBox .historyBox .callHistoryList .callHistoryListing{overflow-y: auto; height: 70vh;}
 .historymainBox .historyBox .titile, .historymainBox .settingBox .title{font-size: 20px; letter-spacing: -0.01em; color: #000; line-height: 28px; margin: 0; padding: 20px; border-bottom: 1px solid #ECEDF0;font-weight: 500; }
 
 

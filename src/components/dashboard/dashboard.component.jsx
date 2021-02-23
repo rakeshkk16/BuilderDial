@@ -23,9 +23,11 @@ export class Dashboard extends Component {
         this.triggerLogOut = this.triggerLogOut.bind(this);
         this.onCallFromLogs = this.onCallFromLogs.bind(this);
         this.displaySection = this.displaySection.bind(this);
+        console.log('dashboard constructor');
     }
 
     componentDidMount() {
+        console.log(this.state);
         // let bg = chrome.extension.getBackgroundPage();
         // console.log(bg);
         // this.setState({
@@ -34,6 +36,7 @@ export class Dashboard extends Component {
       }
 
     displaySection = (sectionName) => {
+        console.log('display section ' + sectionName);
         this.setState({
             showCalls : (sectionName === 'calllogs') ? true : false,
             showDialPad : (sectionName === 'dialpad') ? true : false,
@@ -42,18 +45,22 @@ export class Dashboard extends Component {
     }
 
     triggerLogOut(data) {
+        console.log('logOut triggered');
         this.setState({isUserAuthenticated: data.isUserAuthenticated});
         this.props.onAction(data);
         console.log(data);
     }
 
     onCallFromLogs(data) {
+        console.log('call Initiated from CallHistory');
         this.setState({callObject: data});
-        this.displaySection('dialpad');
+        if (data) {
+            this.displaySection('dialpad');
+        }
     }
 
     render() {
-
+        console.log('dashboard rendered');
         return (
             <div>
                 <div>
@@ -74,13 +81,13 @@ export class Dashboard extends Component {
                 <div>
                     <div className="dialpad-footer">
                         <div className="ftrListing">
-                        <button type="button" className="show_history" onClick={() => this.displaySection('calllogs')}> 
+                        <button type="button" className={"show_history " + (this.state.showCalls ? 'active' : '')} onClick={() => this.displaySection('calllogs')}> 
                             <span className="history"></span> History
                         </button>
-                        <button type="button" className="show_dialpad" onClick={() => this.displaySection('dialpad')}>
+                        <button type="button" className={"show_dialpad " + (this.state.showDialPad ? 'active' : '')} onClick={() => this.displaySection('dialpad')}>
                             <span className="dialkeypad"></span>Keypad
                         </button>
-                        <button type="button" className="show_setting" onClick={() => this.displaySection('settings')}>  
+                        <button type="button" className={"show_setting " + (this.state.showSetting ? 'active' : '')} onClick={() => this.displaySection('settings')}>  
                             <span className="setting"></span>Settings
                         </button>
                         </div>

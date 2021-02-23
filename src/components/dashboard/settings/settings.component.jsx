@@ -1,5 +1,6 @@
 /*global chrome*/
 import React, { Component }  from  'react';
+import ChangePwd from './changepwd/changepwd.component';
 
 import './settings.styles.css';
 
@@ -12,17 +13,25 @@ export class Settings extends Component {
             isUserAuthenticated: props?.userData?.isUserAuthenticated,
             userToken: {
                 access_token: props?.userData?.token
-            }
+            },
+            showChangePwd: false
         }
         console.log(props);
         this.onLogOut = this.onLogOut.bind(this);
+        this.onChangePwd = this.onChangePwd.bind(this);
+        this.onChangePwdSubmit = this.onChangePwdSubmit.bind(this);
     }
 
-    onLogOut = e => {
+    componentDidMount() {
+        console.log('Setting ngOnInit ' + this.state.showChangePwd);
+    }
+
+    onLogOut(e) {
         e.preventDefault();
         axios.post(process.env.REACT_APP_signOutUrl, this.state.userToken)
         .then(response => {
             // isSignedOut = true;
+            console.log('Successfully Logged Out');
             this.setState({isUserAuthenticated: false}, () => {this.props.onSessionOut(this.state)});
             var user = { isUserAuthenticated: false };
             chrome.runtime.sendMessage({ userAuthentication: user });         
@@ -32,26 +41,39 @@ export class Settings extends Component {
         })
     }
 
-    render() {
+    onChangePwd() {
+        this.setState({showChangePwd: true});
+    }
 
+    onChangePwdSubmit() {
+        this.setState({showChangePwd: false});
+    }
+
+    render() {
+        console.log('Setting rendered ' + this.state.showChangePwd);
         return (
-                <div className="midblock customScrollY historymainBox" id="show_history_setting">
-                    <div className="settingBox" id="show_setting">
-                        <div className="title"> Settings </div>                  
-                        <div className="settingListing changePwd">
-                        <div className="infosection">
-                            <div className="setting-txt">Change Password</div>
-                            <div className="arrow"></div>
-                        </div>
-                        </div>
-                        <div className="settingListing" id="signOutSection">
-                            <div className="infosection">
-                                <div className="setting-txt">Sign Out</div>
-                                <div onClick={this.onLogOut} id="signOut" className="arrow signOut"></div>
+            <div>
+                {   this.state.showChangePwd 
+                    ?   <ChangePwd onChangePwd={this.onChangePwdSubmit} userData={this.props?.userData}></ChangePwd>
+                    :   <div className="midblock customScrollY historymainBox" id="show_history_setting">
+                            <div className="settingBox" id="show_setting">
+                                <div className="title"> Settings </div>                  
+                                <div className="settingListing changePwd">
+                                <div className="infosection">
+                                    <div className="setting-txt">Change Password</div>
+                                    <div  onClick={this.onChangePwd} className="arrow"></div>
+                                </div>
+                                </div>
+                                <div className="settingListing" id="signOutSection">
+                                    <div className="infosection">
+                                        <div className="setting-txt">Sign Out</div>
+                                        <div onClick={this.onLogOut} id="signOut" className="arrow"></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
+                }
+            </div>
         )
     }
 

@@ -7,15 +7,19 @@ import playbutton from  '../../../images/play_button.svg';
 import voicemailplayed from '../../../images/played_voicemail_button.svg';
 import voicemailunplayed from "../../../images/unplayed_voicemail_button.svg";
 
+const axios = require('axios').default;
+
 export class CallRecord extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            showHideDetailBox: false
+            showHideDetailBox: false,
+            myAudio : new Audio()
         }
         this.toggleDetailBox = this.toggleDetailBox.bind(this);
         this.onCallClick = this.onCallClick.bind(this);
         this.onPlayRecording = this.onPlayRecording.bind(this);
+        this.updateCallRecord = this.updateCallRecord.bind(this);
     }
 
     componentDidMount() {
@@ -23,6 +27,7 @@ export class CallRecord extends Component {
 
     onCallClick(evt) {
         evt.stopPropagation();
+        this.updateCallRecord(evt, true);
         console.log('Call Clicked');
         let fullNumber = this.props.call.client_number;
         let phoneUtil = require('google-libphonenumber').PhoneNumberUtil.getInstance();
@@ -34,16 +39,45 @@ export class CallRecord extends Component {
             isoCode: (phoneUtil.getRegionCodeForNumber(number).toLowerCase()),
             countryCode: stdCode
         };
-        this.props.onCallClicked(outgoingObject);
-        
+        this.props.onCallClicked(outgoingObject);        
     }
 
     onPlayRecording(evt) {
         evt.stopPropagation();
         console.log('Recording Played');
+        this.setState({myAudio: new Audio(this.props.call.recording_url)}, ()=> this.state.myAudio.play());
+        this.updateCallRecord(evt, false);
     }
 
-    toggleDetailBox() {
+    updateCallRecord(e, isCalled) {
+        e.preventDefault();
+        let data = {};
+        if (isCalled) {
+            data = { id: this.props.call.id}
+        } else {
+            data = { id: this.props.call.id, voicemail_played: true }
+        }
+        console.log(process.env.REACT_APP_missedCallAction);
+        console.log(data);
+        axios.post('https://staging-pb.engineer.ai/api/public/call/missed_call_action', data, {
+            headers: {"Authorization": 'Bearer ' + this.props.token}
+        })
+        .then(response => {
+            console.log(response);                   
+        })
+        .catch(error => {
+            if (error.response) {
+                console.log(error.response);
+                console.log(error.response.data.response.message);
+            } else if (error.request) {
+                console.log(error.request);
+            } else {
+                console.log(error);
+            }
+        })
+    }
+
+    toggleDetailBox(e) {
         console.log('toggle called ' + this.state.showHideDetailBox + ' ' + this.props.call.id + ' ' + this.props.sectionID);
         this.setState({
             showHideDetailBox: ((this.state.showHideDetailBox && (this.props.sectionID !== this.props.call.id)) ? true : !this.state.showHideDetailBox)
@@ -60,7 +94,7 @@ export class CallRecord extends Component {
                <div className="callListBox" id={this.props.call.id}>
                    <div className="leftBx">
                        <div className={"callArrow " + ((this.props.call.status !== 'completed') ? 'missed' : (this.props.call.call_type === 'outbound') ? 'outgoing' : 'incoming')}></div>
-                       <div className="numberBx" style={{color: ((this.props.call.status !== 'completed') ? '#E01717' : null), fontWeight: ((this.props.call.status !== 'completed') ? ((!this.props.call.voicemail_played_by) ? 'bold' : '') : '')}}>
+                       <div className="numberBx" style={{color: ((this.props.call.status !== 'completed') ? '#E01717' : null), fontWeight: ((this.props.call.status !== 'completed') ? ((!this.props.call.actioned_by) ? 'bold' : '') : '')}}>
                            {this.props.call.client_number}
                            <span>{this.props.call.call_duration}</span>
                        </div>
