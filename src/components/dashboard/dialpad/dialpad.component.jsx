@@ -300,6 +300,13 @@ export class DialPad extends Component {
     }
 
     componentWillUnmount() {
+      console.log('DialPad unmount');
+      let callStatus = {
+        makeCall: this.state.makeCall,
+        gettingCall: this.state.gettingCall,
+        onCall: this.state.onCall
+      }
+      this.props.callStatus(callStatus);
       chrome.runtime.onMessage.removeListener(this.handleMessage);
     }
 
@@ -455,13 +462,10 @@ export class DialPad extends Component {
                           <tbody>
                             <tr>
                               <td style={{display: 'inline-flex'}}>
-                                <div style={{display: 'inline-flex', width:'65%',border:'1px solid #DCDCDC'}}>
                                 <PhoneInput
                                   country={(this.props.geoData) ? this.props?.geoData?.country_code?.toLowerCase() : 'in'}
                                   value={this.state.phone}
                                   onChange={this.handleOnChange}
-                                  // onChange={this.onNumberChange.bind(this)}
-                                  // onChange={phone => this.setState({ phone })}
                                   countryCodeEditable={false}
                                   // autoFocus={true}
                                   inputProps={{
@@ -469,8 +473,6 @@ export class DialPad extends Component {
                                     autoFocus: true
                                   }}
                                 />
-                                </div>
-                                {/* <input type="text" autoComplete="off" className="inputNumber" maxLength="12" id="phoneNumber" defaultValue='' /> */}
                               </td>
                             </tr>
                           </tbody>

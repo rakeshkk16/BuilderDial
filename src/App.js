@@ -23,13 +23,13 @@ export default function App() {
 
   return (
     <div className="App">
-           <div className="main">
-              <div className="header">
-                <img src={logo} alt="Logo" />
-                <button type="button" onClick={() => onClick()} className="close close_extension" style={{cursor: 'pointer'}}> x </button>
-              </div>
-              <HomePage></HomePage>
-            </div>
+        <div className="main">
+          <div className="header">
+            <img src={logo} alt="Logo" />
+            <button type="button" onClick={() => onClick()} className="close close_extension" style={{cursor: 'pointer'}}> x </button>
+          </div>
+          <HomePage></HomePage>
+        </div>
     </div>
   );
 }

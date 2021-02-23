@@ -28,17 +28,20 @@ export class Settings extends Component {
 
     onLogOut(e) {
         e.preventDefault();
-        axios.post(process.env.REACT_APP_signOutUrl, this.state.userToken)
-        .then(response => {
-            // isSignedOut = true;
-            console.log('Successfully Logged Out');
-            this.setState({isUserAuthenticated: false}, () => {this.props.onSessionOut(this.state)});
-            var user = { isUserAuthenticated: false };
-            chrome.runtime.sendMessage({ userAuthentication: user });         
-        })
-        .catch(error => {
-            console.log(error);
-        })
+        console.log(this.props.callStatus);
+        if (this.props.callStatus.makeCall && !this.props.callStatus.gettingCall && !this.props.callStatus.onCall) {
+            axios.post(process.env.REACT_APP_signOutUrl, this.state.userToken)
+            .then(response => {
+                // isSignedOut = true;
+                console.log('Successfully Logged Out');
+                this.setState({isUserAuthenticated: false}, () => {this.props.onSessionOut(this.state)});
+                var user = { isUserAuthenticated: false };
+                chrome.runtime.sendMessage({ userAuthentication: user });         
+            })
+            .catch(error => {
+                console.log(error);
+            })
+        }
     }
 
     onChangePwd() {
